@@ -19,9 +19,9 @@ import static org.lwjgl.opengl.GL11.glScalef;
 import static org.lwjgl.opengl.GL11.glShadeModel;
 import static org.lwjgl.opengl.GL11.glViewport;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
@@ -98,16 +98,12 @@ public class RenderThread extends Thread {
 		Set<Integer> keySet = Example1.getEntities().keySet();
 		Iterator<Integer> keySetIterator = keySet.iterator();
 		while (keySetIterator.hasNext()) {
-			Integer key = keySetIterator.next();
-			Collection<Entity> entityCollection = Example1.getEntities().get(
-					key);
-			Iterator<Entity> entityCollectionIterator = entityCollection
-					.iterator();
-			synchronized (entityCollectionIterator) {
-				while (entityCollectionIterator.hasNext()) {
-					Entity entity = entityCollectionIterator.next();
-					entity.render();
-				}
+			int ID = keySetIterator.next();
+			LinkedBlockingQueue<Entity> entityCollection = new LinkedBlockingQueue<>(
+					Example1.getEntities(ID));
+			while (!entityCollection.isEmpty()) {
+				Entity entity = entityCollection.poll();
+				entity.render();
 			}
 		}
 	}

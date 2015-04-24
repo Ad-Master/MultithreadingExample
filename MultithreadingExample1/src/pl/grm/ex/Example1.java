@@ -1,5 +1,8 @@
 package pl.grm.ex;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -10,8 +13,6 @@ import pl.grm.ex.threads.LogicThread;
 import pl.grm.ex.threads.RenderThread;
 import pl.grm.ex.timers.FPSTimer;
 import pl.grm.ex.timers.TPSTimer;
-
-import com.google.common.collect.HashMultimap;
 
 public class Example1 {
 	/** Ticks per second */
@@ -31,9 +32,9 @@ public class Example1 {
 	/** Timer to count game logic tps */
 	private TPSTimer tpsTimer;
 	/** Stage of game rendering */
-	private GameLoadStage gameLoadStage = GameLoadStage.LOADING;
+	private GameLoadStage gameLoadStage;
 	/** Collection of ingame entities */
-	HashMultimap<Integer, Entity> entityMap = HashMultimap.create();
+	private ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Entity>> entityMap;
 
 	public static void main(String[] args) {
 		instance = new Example1();
@@ -49,6 +50,8 @@ public class Example1 {
 		} catch (LWJGLException e) {
 			e.printStackTrace();
 		}
+		gameLoadStage = GameLoadStage.LOADING;
+		entityMap = new ConcurrentHashMap<>();
 	}
 
 	private void prepare() {
@@ -67,7 +70,7 @@ public class Example1 {
 		LWJGLEventMulticaster.startMulitCaster();
 	}
 
-	public static void stop() {
+	public static synchronized void stop() {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -95,12 +98,27 @@ public class Example1 {
 		}).start();
 	}
 
-	public static void addEntity(Entity entity) {
-		instance.entityMap.put(entity.getID(), entity);
+	public static synchronized void addEntity(Entity entity) {
+		int ID = entity.getID();
+		if (!instance.entityMap.containsKey(ID)) {
+			ConcurrentLinkedQueue<Entity> list = new ConcurrentLinkedQueue<>();
+			list.add(entity);
+			instance.entityMap.put(ID, list);
+		} else {
+			instance.entityMap.get(ID).add(entity);
+		}
 	}
 
-	public static HashMultimap<Integer, Entity> getEntities() {
+	public static ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Entity>> getEntities() {
 		return instance.entityMap;
+	}
+
+	public static synchronized ConcurrentLinkedQueue<Entity> getEntities(int ID) {
+		if (getEntities().containsKey(ID)) {
+			return getEntities().get(ID);
+		} else {
+			return null;
+		}
 	}
 
 	public RenderThread getRenderThread() {

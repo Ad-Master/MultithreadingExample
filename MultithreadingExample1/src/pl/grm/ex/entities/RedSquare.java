@@ -20,6 +20,11 @@ public class RedSquare extends Entity2D {
 
 	@Override
 	public void render() {
+		try {
+			Thread.sleep(10l);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		glPushMatrix();
 		glColor3f(1f, 0f, 0f);
 		glBegin(GL_QUADS);
@@ -33,10 +38,13 @@ public class RedSquare extends Entity2D {
 
 	@Override
 	public void update() {
+		try {
+			Thread.sleep(100l);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		if (position.getX() < 500) {
-			position.move(1, 0);
-		} else {
-			position.setX(0);
+			position.move(5, 0);
 		}
 	}
 
@@ -46,5 +54,4 @@ public class RedSquare extends Entity2D {
 			this.width = size;
 		}
 	}
-
 }

@@ -20,7 +20,7 @@ public class LogicThread extends Thread {
 	public void run() {
 		timer.initTime(Example1.TPS);
 		boolean isClosing = false;
-		while (Example1.instance.isRunning()) {
+		while (Example1.instance.isRunning() && !isClosing) {
 			GameLoadStage loadState = Example1.instance.getGameStage();
 			if (loadState != GameLoadStage.CLOSING) {
 				System.out.println(loadState.toString());
@@ -82,11 +82,16 @@ public class LogicThread extends Thread {
 		Set<Integer> keySet = Example1.getEntities().keySet();
 		Iterator<Integer> iterator = keySet.iterator();
 		while (iterator.hasNext()) {
-			Integer key = iterator.next();
-			Collection<Entity> entityCollection = Example1.getEntities().get(
-					key);
-			for (Entity entity : entityCollection) {
-				entity.update();
+			int ID = iterator.next();
+			Collection<Entity> entityCollection = Example1.getEntities(ID);
+			Iterator<Entity> entityCollectionIterator = entityCollection
+					.iterator();
+			synchronized (entityCollectionIterator) {
+				while (entityCollectionIterator.hasNext()) {
+					Entity entity = entityCollectionIterator.next();
+					entity.update();
+					// new Thread(() -> entity.update()).start();
+				}
 			}
 		}
 	}

@@ -22,6 +22,11 @@ public abstract class Entity2D implements Entity, VisibilityChangable {
 	}
 
 	@Override
+	public int compareTo(Entity e) {
+		return Integer.compare(this.ID, e.getID());
+	}
+
+	@Override
 	public void setVisible() {
 		this.visible = true;
 	}

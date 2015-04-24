@@ -2,10 +2,12 @@ package pl.grm.ex.inputs;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.lwjgl.input.Keyboard;
 
 import pl.grm.ex.Example1;
+import pl.grm.ex.entities.Entity;
 import pl.grm.ex.entities.RedSquare;
 
 public class DefaultListeners {
@@ -15,6 +17,7 @@ public class DefaultListeners {
 		defListeners = new HashMap<Integer, GameKeyListener>();
 		defListeners.put(Keyboard.KEY_ESCAPE, ESC_Listener());
 		defListeners.put(Keyboard.KEY_R, R_Listener());
+		defListeners.put(Keyboard.KEY_S, S_Listener());
 	}
 
 	public static boolean contains(int value) {
@@ -67,6 +70,30 @@ public class DefaultListeners {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				Example1.addEntity(new RedSquare());
+			}
+		};
+	}
+
+	private static GameKeyListener S_Listener() {
+		return new GameKeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				ConcurrentLinkedQueue<Entity> entities = Example1
+						.getEntities(222);
+				if (entities != null) {
+					for (Entity entity : entities) {
+						RedSquare rS = (RedSquare) entity;
+						rS.getPosition().move(0, 5);
+					}
+				}
 			}
 		};
 	}
