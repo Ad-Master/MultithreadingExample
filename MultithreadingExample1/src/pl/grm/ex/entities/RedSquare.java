@@ -7,6 +7,7 @@ import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glPopMatrix;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.opengl.GL11.glVertex2f;
+import pl.grm.ex.entities.core.Entity2D;
 
 public class RedSquare extends Entity2D {
 	private int height;
@@ -16,15 +17,11 @@ public class RedSquare extends Entity2D {
 		super(222);
 		this.height = 10;
 		this.width = 10;
+		setVisible();
 	}
 
 	@Override
 	public void render() {
-		try {
-			Thread.sleep(10l);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		glPushMatrix();
 		glColor3f(1f, 0f, 0f);
 		glBegin(GL_QUADS);
@@ -38,11 +35,6 @@ public class RedSquare extends Entity2D {
 
 	@Override
 	public void update() {
-		try {
-			Thread.sleep(100l);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		if (position.getX() < 500) {
 			position.move(5, 0);
 		}

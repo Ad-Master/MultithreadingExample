@@ -1,4 +1,4 @@
-package pl.grm.ex.entities;
+package pl.grm.ex.entities.core;
 
 public abstract class Entity2D implements Entity, VisibilityChangable {
 	protected boolean visible;

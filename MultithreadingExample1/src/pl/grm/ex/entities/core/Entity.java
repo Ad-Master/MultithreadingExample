@@ -1,4 +1,4 @@
-package pl.grm.ex.entities;
+package pl.grm.ex.entities.core;
 
 public interface Entity extends Comparable<Entity> {
 

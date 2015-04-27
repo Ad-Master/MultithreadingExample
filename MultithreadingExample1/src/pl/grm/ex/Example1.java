@@ -7,7 +7,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
-import pl.grm.ex.entities.Entity;
+import pl.grm.ex.entities.core.Entity;
 import pl.grm.ex.threads.LWJGLEventMulticaster;
 import pl.grm.ex.threads.LogicThread;
 import pl.grm.ex.threads.RenderThread;
@@ -59,40 +59,37 @@ public class Example1 {
 		setTPSTimer(new TPSTimer());
 		setLogicThread(new LogicThread());
 		setRenderThread(new RenderThread());
+		LWJGLEventMulticaster.init();
 	}
 
 	private void start() {
 		setRunning(true);
-		setGameStage(GameLoadStage.MAIN);
-		LWJGLEventMulticaster.init();
 		renderThread.start();
 		logicThread.start();
 		LWJGLEventMulticaster.startMulitCaster();
+		setGameStage(GameLoadStage.MAIN);
 	}
 
 	public static synchronized void stop() {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				Thread.currentThread().setName("Closing Thread");
-				Example1.instance.setGameStage(GameLoadStage.CLOSING);
-				LWJGLEventMulticaster.discharge();
-				instance.setRunning(false);
-				long initTime = System.currentTimeMillis();
-				while (instance.getLogicThread().isAlive()
-						|| instance.getRenderThread().isAlive()) {
-					try {
-						Thread.sleep(100l);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					long timeDelay = System.currentTimeMillis() - initTime;
-					if (timeDelay > 5 * 1000) {
-						System.out.println("Thread rage quit: "
-								+ Thread.currentThread().getName());
-						System.exit(0);
-						break;
-					}
+		new Thread(() -> {
+			Thread.currentThread().setName("Closing Thread");
+			Example1.instance.setGameStage(GameLoadStage.CLOSING);
+			instance.setRunning(false);
+			LWJGLEventMulticaster.discharge();
+			long initTime = System.currentTimeMillis();
+			while (instance.getLogicThread().isAlive()
+					|| instance.getRenderThread().isAlive()) {
+				try {
+					Thread.sleep(100l);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				long timeDelay = System.currentTimeMillis() - initTime;
+				if (timeDelay > 5 * 1000) {
+					System.out.println("Thread rage quit: "
+							+ Thread.currentThread().getName());
+					System.exit(1);
+					break;
 				}
 			}
 		}).start();

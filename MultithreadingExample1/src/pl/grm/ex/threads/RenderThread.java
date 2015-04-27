@@ -4,10 +4,9 @@ import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_ONE;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
 import static org.lwjgl.opengl.GL11.GL_SMOOTH;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glEnable;
@@ -28,7 +27,8 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GLContext;
 
 import pl.grm.ex.Example1;
-import pl.grm.ex.entities.Entity;
+import pl.grm.ex.entities.core.Entity;
+import pl.grm.ex.entities.core.Entity2D;
 import pl.grm.ex.timers.FPSTimer;
 
 public class RenderThread extends Thread {
@@ -41,21 +41,21 @@ public class RenderThread extends Thread {
 
 	@Override
 	public void run() {
-		initRenderer();
+		this.initRenderer();
+		this.timer.initTime();
 		while (Example1.instance.isRunning()) {
 			if (Display.isCloseRequested()) {
 				Example1.stop();
 			}
-			loop();
+			this.loop();
 		}
 		Display.destroy();
 	}
 
 	/**
-	 * Called before loop
+	 * Initilizes lwjgl things before loop
 	 */
 	private void initRenderer() {
-		this.timer.initTime();
 		try {
 			Display.create();
 			if (!GLContext.getCapabilities().OpenGL11) {
@@ -74,10 +74,13 @@ public class RenderThread extends Thread {
 		glViewport(0, 0, Display.getWidth(), Display.getHeight());
 		glMatrixMode(GL_MODELVIEW);
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_ONE, GL_ONE);
 		glShadeModel(GL_SMOOTH);
 	}
 
+	/**
+	 * Main render loop
+	 */
 	private void loop() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		switch (Example1.instance.getGameStage()) {
@@ -103,7 +106,9 @@ public class RenderThread extends Thread {
 					Example1.getEntities(ID));
 			while (!entityCollection.isEmpty()) {
 				Entity entity = entityCollection.poll();
-				entity.render();
+				if (((Entity2D) entity).isVisible()) {
+					entity.render();
+				}
 			}
 		}
 	}

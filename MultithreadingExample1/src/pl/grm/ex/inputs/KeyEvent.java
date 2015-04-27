@@ -1,34 +1,23 @@
 package pl.grm.ex.inputs;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import pl.grm.ex.GameEvent;
 
 public class KeyEvent implements GameEvent {
 	private int eventKey;
-	private String buttonKey;
 	private boolean eventKeyState;
 	private long eventTime;
 	private boolean repeatEvent;
-	private ArrayList<GameListener> listeners;
+	private List<GameListener> listeners;
 
 	public KeyEvent(int eventKey, boolean eventKeyState, long eventTime,
-			boolean repeatEvent, ArrayList<GameListener> eventListeners) {
+			boolean repeatEvent, List<GameListener> list) {
 		this.setEventKey(eventKey);
 		this.setEventKeyState(eventKeyState);
 		this.setEventTime(eventTime);
 		this.setRepeatEvent(repeatEvent);
-		this.listeners = eventListeners;
-	}
-
-	public KeyEvent(String eventButton, boolean eventKeyState, long eventTime,
-			boolean repeatEvent, ArrayList<GameListener> eventListeners) {
-		this.setButtonKey(eventButton);
-		this.setEventKeyState(eventKeyState);
-		this.setEventTime(eventTime);
-		this.setRepeatEvent(repeatEvent);
-		this.listeners = new ArrayList<GameListener>();
-		this.listeners = eventListeners;
+		this.listeners = list;
 	}
 
 	@Override
@@ -84,15 +73,7 @@ public class KeyEvent implements GameEvent {
 		this.repeatEvent = repeatEvent;
 	}
 
-	public ArrayList<GameListener> getListeners() {
+	public List<GameListener> getListeners() {
 		return listeners;
-	}
-
-	public String getButtonKey() {
-		return buttonKey;
-	}
-
-	public void setButtonKey(String eventButton) {
-		this.buttonKey = eventButton;
 	}
 }

@@ -4,7 +4,7 @@ public class FPSTimer {
 	/** time at last frame */
 	private long	lastFrame;
 	/** current frames per second ration (not in full second!) */
-	private int		fps;
+	private int		fpsT;
 	/** last fps time */
 	private long	lastFPSTime;
 	/** last fps ration */
@@ -20,11 +20,11 @@ public class FPSTimer {
 	 */
 	public void updateFPS() {
 		if (getTime() - lastFPSTime > 1000) {
-			lastFPS = fps;
-			fps = 0;
+			lastFPS = fpsT;
+			fpsT = 0;
 			lastFPSTime += 1000;
 		}
-		fps++;
+		fpsT++;
 	}
 	
 	/**
@@ -54,7 +54,7 @@ public class FPSTimer {
 	 * @return fps Counter
 	 */
 	public int getFPS() {
-		return fps;
+		return fpsT;
 	}
 	
 	/**

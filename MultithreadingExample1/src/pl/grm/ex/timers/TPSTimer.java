@@ -1,27 +1,30 @@
 package pl.grm.ex.timers;
 
 public class TPSTimer {
-	private long	lastTick;
-	private int		tpsT	= 0;
-	private long	lastCallTime;
-	private long	lastTPS	= 0;
-	private int		tps;
-	
+	private long lastTick;
+	private int tpsT = 0;
+	private long lastCallTime;
+	private long lastTPS = 0;
+	private int tps;
+
 	public void initTime(int tps) {
 		this.tps = tps;
 		getDelta();
 		lastCallTime = getTime();
 	}
-	
+
+	/**
+	 * Update TPS
+	 */
 	public void sync() {
 		updateTPS();
 		Sync.sync(tps);
 	}
-	
+
 	/**
 	 * Calculate the TPS and set it
 	 */
-	public void updateTPS() {
+	private void updateTPS() {
 		long currentTime = getTime();
 		if (currentTime - lastCallTime > 1000) {
 			lastTPS = tpsT;
@@ -30,17 +33,17 @@ public class TPSTimer {
 		}
 		tpsT++;
 	}
-	
+
 	/**
-	 * last tps is equal current tick amount in current second
-	 * so in other words is true every second
+	 * Last tps is equal current tick amount in current second so in other words
+	 * is true every second
 	 * 
 	 * @return true if condition in description is true
 	 */
 	public boolean isFullCycle() {
 		return getLastTps() == getTPS() || (getTime() - lastCallTime > 1000);
 	}
-	
+
 	/**
 	 * Calculate how many milliseconds have passed since last frame.
 	 *
@@ -52,7 +55,7 @@ public class TPSTimer {
 		lastTick = time;
 		return delta;
 	}
-	
+
 	/**
 	 * Get the accurate system time
 	 *
@@ -61,7 +64,7 @@ public class TPSTimer {
 	public long getTime() {
 		return System.nanoTime() / 1000000;
 	}
-	
+
 	/**
 	 * Get the current tps count (fake)
 	 * 
@@ -70,7 +73,7 @@ public class TPSTimer {
 	public int getTPS() {
 		return tpsT;
 	}
-	
+
 	/**
 	 * Gets the real TPS of display renderer
 	 * 

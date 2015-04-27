@@ -1,9 +1,9 @@
 package pl.grm.ex.threads;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.lwjgl.input.Keyboard;
@@ -15,14 +15,14 @@ import pl.grm.ex.inputs.GameListener;
 import pl.grm.ex.inputs.KeyEvent;
 
 public class LWJGLEventMulticaster extends Thread {
-	private static ConcurrentHashMap<Integer, GameKeyListener> keyListenersHandler;
+	private static ConcurrentHashMap<Integer, ConcurrentLinkedQueue<GameKeyListener>> keyListenersHandler;
 	private static LinkedBlockingQueue<GameEvent> gameEventsQueue;
 	private static LWJGLEventMulticaster eventCollector;
 	private static LWJGLEventMulticaster eventCaster;
 	private boolean stopInvoked = false;
 	private static boolean initialised = false;
 	private boolean finished = false;
-	private MCType type = MCType.NONE;
+	private MCType type;
 
 	private LWJGLEventMulticaster(MCType type) {
 		this.type = type;
@@ -39,7 +39,7 @@ public class LWJGLEventMulticaster extends Thread {
 			gameEventsQueue = new LinkedBlockingQueue<GameEvent>();
 		}
 		if (keyListenersHandler == null) {
-			keyListenersHandler = new ConcurrentHashMap<Integer, GameKeyListener>();
+			keyListenersHandler = new ConcurrentHashMap<Integer, ConcurrentLinkedQueue<GameKeyListener>>();
 		}
 		keyListenersHandler.putAll(DefaultListeners.getAll());
 		setInitialised(true);
@@ -77,30 +77,22 @@ public class LWJGLEventMulticaster extends Thread {
 			}
 			while (Keyboard.next()) {
 				int eventKey = Keyboard.getEventKey();
-				ArrayList<GameListener> eventListeners = collectKeyListeners(Keyboard
-						.getEventKey());
 				KeyEvent event = new KeyEvent(eventKey,
 						Keyboard.getEventKeyState(),
 						System.currentTimeMillis(), Keyboard.isRepeatEvent(),
-						eventListeners);
+						collectKeyListeners(Keyboard.getEventKey()));
 				gameEventsQueue.add(event);
 			}
 		}
 		setFinished(true);
 	}
 
-	private ArrayList<GameListener> collectKeyListeners(int eventKey) {
-		ArrayList<GameListener> eventListeners = new ArrayList<GameListener>();
-		Iterator<Entry<Integer, GameKeyListener>> iterator = LWJGLEventMulticaster.keyListenersHandler
-				.entrySet().iterator();
-		while (iterator.hasNext()) {
-			Entry<Integer, GameKeyListener> listenerEntry = iterator.next();
-			if (listenerEntry.getKey() == eventKey) {
-				GameKeyListener keyListener = listenerEntry.getValue();
-				eventListeners.add(keyListener);
-			}
+	private List<GameListener> collectKeyListeners(int eventKey) {
+		if (keyListenersHandler.containsKey(eventKey)) {
+			return new ArrayList<GameListener>(
+					keyListenersHandler.get(eventKey));
 		}
-		return eventListeners;
+		return null;
 	}
 
 	private synchronized void castEvents() {
@@ -150,19 +142,26 @@ public class LWJGLEventMulticaster extends Thread {
 	}
 
 	public static void addKeyListener(int key, GameKeyListener keyListener) {
-		keyListenersHandler.put(key, keyListener);
+		if (!keyListenersHandler.containsKey(key)) {
+			keyListenersHandler.put(key, new ConcurrentLinkedQueue<>());
+		}
+		ConcurrentLinkedQueue<GameKeyListener> list = keyListenersHandler
+				.get(key);
+		if (!list.contains(keyListener))
+			list.add(keyListener);
+		keyListenersHandler.put(key, list);
 	}
 
 	public static boolean containsListener(int key) {
 		return LWJGLEventMulticaster.keyListenersHandler.containsKey(key);
 	}
 
-	public static void removeListener(int key) {
+	public static void removeListeners(int key) {
 		LWJGLEventMulticaster.keyListenersHandler.remove(key);
 	}
 
 	private enum MCType {
-		NONE, COLLECTOR, CASTER;
+		COLLECTOR, CASTER;
 	}
 
 	public static boolean isInitialised() {

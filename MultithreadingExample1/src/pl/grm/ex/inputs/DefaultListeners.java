@@ -1,23 +1,32 @@
 package pl.grm.ex.inputs;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.lwjgl.input.Keyboard;
 
 import pl.grm.ex.Example1;
-import pl.grm.ex.entities.Entity;
 import pl.grm.ex.entities.RedSquare;
+import pl.grm.ex.entities.core.Entity;
 
 public class DefaultListeners {
-	private static HashMap<Integer, GameKeyListener> defListeners;
+	private static HashMap<Integer, ConcurrentLinkedQueue<GameKeyListener>> defListeners;
 
 	private static void init() {
-		defListeners = new HashMap<Integer, GameKeyListener>();
-		defListeners.put(Keyboard.KEY_ESCAPE, ESC_Listener());
-		defListeners.put(Keyboard.KEY_R, R_Listener());
-		defListeners.put(Keyboard.KEY_S, S_Listener());
+		defListeners = new HashMap<Integer, ConcurrentLinkedQueue<GameKeyListener>>();
+		add(Keyboard.KEY_ESCAPE, ESC_Listener());
+		add(Keyboard.KEY_R, R_Listener());
+		add(Keyboard.KEY_S, S_Listener());
+	}
+
+	private static void add(int key, GameKeyListener gameKeyListener) {
+		if (!defListeners.containsKey(key)) {
+			defListeners.put(key, new ConcurrentLinkedQueue<>());
+		}
+		ConcurrentLinkedQueue<GameKeyListener> list = defListeners.get(key);
+		if (!list.contains(gameKeyListener))
+			list.add(gameKeyListener);
 	}
 
 	public static boolean contains(int value) {
@@ -27,11 +36,11 @@ public class DefaultListeners {
 		return defListeners.containsKey(value);
 	}
 
-	public static GameKeyListener getListener(int value) {
+	public static Queue<GameKeyListener> getListeners(int key) {
 		if (defListeners == null) {
 			init();
 		}
-		return defListeners.get(value);
+		return defListeners.get(key);
 	}
 
 	private static GameKeyListener ESC_Listener() {
@@ -98,7 +107,7 @@ public class DefaultListeners {
 		};
 	}
 
-	public static Map<Integer, ? extends GameKeyListener> getAll() {
+	public static HashMap<Integer, ConcurrentLinkedQueue<GameKeyListener>> getAll() {
 		if (defListeners == null) {
 			init();
 		}
